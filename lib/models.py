@@ -4,6 +4,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import sessionmaker
 from faker import Faker
+from sqlalchemy import Boolean
 import bcrypt
  
 Base = declarative_base()
@@ -15,11 +16,10 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     name = Column( "name", String)
     option = Column("option" ,String)
-    _password = Column(String, name='password') 
+    
 
-    def __init__(self, name, password, option):
+    def __init__(self, name, option):
         self.name = name
-        self._password =password
         self.option = option
     
     def __repr__(self):
@@ -40,48 +40,37 @@ class User(Base):
     def filter_by_id(cls,user_id):
         return session.query(cls).filter(cls.id == user_id).first()
 
-     @property
-    def password(self):
-        return self._password
-
-    @password.setter
-    def password(self, value):
-        hashed_password = bcrypt.hashpw(value.encode('utf-8'), bcrypt.gensalt())
-        self._password = hashed_password.decode('utf-8')
-
+    
 
 
 class Reservation(Base):
-
     __tablename__ = 'reservations'
 
     id = Column(Integer, primary_key=True)
     user_name = Column(String, ForeignKey('users.name'))
     date = Column("date", String)
     time = Column("time" , String)
-    number_of_guests = Column( "number_of_guests" Integer)
-    deposit_paid = Column (Boolean, default=False)
-    
+    number_of_guests = Column( "number_of_guests", Integer)
+    deposit_paid = Column(Boolean, default=False)
 
     def __repr__(self):
         return f"<Reservation(name :'{self.name}',date:'{self.date}',time:'{self.time}', number_of_guests:'{self.number_of_guests}, deposit_paid:'{self.deposit_paid}')>"
 
-User.reservations = relationship("Reservation", order_by=Reservation.id, back_populates="user")
-    
     @classmethod
-    def create_reservation(cls, user_name,date,time,number_of_guests):
-        reservation = cls(user_name = user_name, date=date, time=time, number_of_guests= number_of_guests)
+    def create_reservation(cls, session, user_name, date, time, number_of_guests):
+        reservation = cls(user_name=user_name, date=date, time=time, number_of_guests=number_of_guests)
         session.add(reservation)
         session.commit()
         return reservation
-    
+
     @classmethod
-    def get_all_reservations(cls):
+    def get_all_reservations(cls, session):
         return session.query(cls).all()
-    
+
     @classmethod
     def filter_reservation_by_id(cls, reservation_id):
         return session.query(cls).filter(cls.id == reservation_id).first()
+
     @classmethod
     def reservation_deposit_paid(cls, reservation_id):
         reservation = session.query(cls).filter(cls.id == reservation_id).first()
@@ -92,16 +81,15 @@ User.reservations = relationship("Reservation", order_by=Reservation.id, back_po
             return False
 
     @classmethod
-    def cancel_reservation(cls,reservation_id):
+    def cancel_reservation(cls, reservation_id):
         reservation = session.query(cls).filter(cls.id == reservation_id)
 
-        if reservation found:
+        if reservation:
             session.delete(reservation)
             session.commit()
             return True
         else:
             return False
-
 
 
 class BulkingMenu(Base):
@@ -112,6 +100,13 @@ class BulkingMenu(Base):
     description = Column("description", String)
     price = Column("price", String)
     category = Column("category", String)
+
+    @classmethod
+    def create_menu_item(cls, session, name, description, price):
+        bulking_menu_item = cls(name=name, description=description, price=price )
+        session.add(bulking_menu_item)
+        session.commit()
+        return bulking_menu_item
 
     @classmethod
     def get_all(cls, session):
@@ -133,6 +128,13 @@ class CuttingMenu(Base):
     description = Column("description", String)
     price = Column("price", String)
     category = Column("category", String)
+
+    @classmethod
+    def create_menu_item(cls, session, name, description, price):
+       cutting_menu_item = cls(name=name, description=description, price=price )
+       session.add(cutting_menu_item)
+       session.commit()
+       return cutting_menu_item
 
     @classmethod
     def get_all(cls, session):
@@ -261,11 +263,12 @@ for item in cutting_menu_items:
     CuttingMenu.create_menu_item(session, **item)
 
 faker = Faker()
-for _ in range(10):
-    user = User(name=faker.name(), option=faker.random_element(elements=('CUTTING', 'BULKING')))
-    reservation = Reservation(user_name=user.name, date=faker.date(), time=faker.time(),
-                              number_of_guests=faker.random_int(min=1, max=10,deposit_paid=True))
-    session.add(reservation)
+for _ in range(30):
+   user = User(name=faker.name(), option=faker.random_element(elements=('CUTTING', 'BULKING')))
+reservation = Reservation(user_name=user.name, date=faker.date(), time=faker.time(),
+                          number_of_guests=faker.random_int(min=1, max=10))
+reservation.deposit_paid = True  
+session.add(reservation)
 
 
 #Selecting menu item

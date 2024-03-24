@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from faker import Faker
 from sqlalchemy import Boolean
 import bcrypt
+
  
 Base = declarative_base()
 

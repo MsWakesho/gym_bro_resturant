@@ -144,43 +144,43 @@ def main():
                     delivery_option = input("Looking for delivery?(yes/no):").lower()
 
                     if delivery_option == 'yes':
-                       location = input("Enter your location:")
-                       street_name = input("Enter your street name:")
-                       
-                       print("Select a cutting meal for delivery:")
-                       cutting_menu_items = CuttingMenu.get_all(session)
-                       for index, item in enumerate(cutting_menu_items, start=1):
+                        location = input("Enter your location:")
+                        street_name = input("Enter your street name:")
+                        
+                        # Selecting The Meal
+                        print("Select a cutting menu item for delivery:")
+                        cutting_menu_items = CuttingMenu.get_all(session)
+                        for index, item in enumerate(cutting_menu_items, start=1):
                             print(f"{index}.{item.name} - {item.price}")
-                            
-                            selected_items = []
-                            total_price = 0  # Initialize total price
-                            while True:
-                                selection = input("Enter the number of the menu item you want to select (or 'done' to finish): ")
-                                if selection.lower() == 'done':
-                                    break
-                                try:
-                                    index = int(selection)
-                                    if 1 <= index <= len(cutting_menu_items):
-                                        selected_item = cutting_menu_items[index - 1]
-                                        selected_items.append(selected_item)
-                                        total_price += int(selected_item.price) # Add the price of the selected item to total price
-                                        print(f"{selected_item.name} - {selected_item.price} added to your order.")
-                                    else:
-                                        print("Invalid selection. Please enter a valid number.") 
-                                except ValueError:
-                                    print("Invalid input. Please enter a number or 'done'.")
 
-                            # Displaying the ordered items and total price
-                            print("Your order:")
-                            for item in selected_items:
-                                print(f"{item.name} - {item.price}")
-                            print(f"Total price: {total_price}")
+                        selected_items = []
+                        total_price = 0
+                        while True:
+                            selection = input("Enter the number of the menu item you want to select (or 'done' to finish): ")
+                            if selection.lower() == 'done':
+                                break
+                            try:
+                                index = int(selection)
+                                if 1 <= index <= len(cutting_menu_items):
+                                    selected_item = cutting_menu_items[index - 1]
+                                    selected_items.append(selected_item)
+                                    total_price += int(selected_item.price)
+                                    print(f"{selected_item.name} - {selected_item.price} added to your order.")
+                                else:
+                                    print("Invalid selection. Please enter a valid number.") 
+                            except ValueError:
+                                print("Invalid input. Please enter a number or 'done'.")
 
-                            # Create delivery record with total price
-                            delivery = Delivery.create_delivery(session, user_name=name, location=location, street_name=street_name, price=total_price)
-                            print("***Order Placed Successfully!***")
+                        print("Your order:")
+                        for item in selected_items:
+                            print(f"{item.name} - {item.price}")
+                        print(f"Total price: {total_price}")
+
+                        delivery = Delivery.create_delivery(session, user_name=name, location=location, street_name=street_name, price=total_price)
+                        print("***Order Placed Successfully!***")
                     else:
-                            print("No Delivery order placed. Returning to main menu")
+                        print("No Delivery order placed. Returning to main menu")
+
 
 
         elif option == 3:

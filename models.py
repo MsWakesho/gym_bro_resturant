@@ -7,6 +7,11 @@ from faker import Faker
 from sqlalchemy import Boolean
 import bcrypt
 
+# 1. Object-Relational Mapping (ORM) with SQLAlchemy:
+# This project uses SQLAlchemy for ORM, allowing seamless interaction with the database using Python classes.
+# Each class represents a database table, inheriting from SQLAlchemy's Base class and defining attributes corresponding to table columns.
+# Relationships between tables are established using foreign keys, demonstrating proficiency in ORM concepts.
+
  
 Base = declarative_base()
 
@@ -43,6 +48,11 @@ class User(Base):
 
     
 
+# 2. Database Table Relationships:
+# The code defines multiple database tables such as 'users', 'reservations', 'bulking_menus', 'cutting_menus', and 'delivery'.
+# These tables are interconnected through relationships using foreign key constraints.
+# For instance, the 'reservations' table references the 'users' table via a foreign key, establishing a one-to-many relationship between users and reservations.
+class Reservation(Base):
 
 class Reservation(Base):
     __tablename__ = 'reservations'
@@ -264,6 +274,12 @@ cutting_menu_items = [
 
 for item in cutting_menu_items:
     CuttingMenu.create_menu_item(session, **item)
+    
+    
+# 3. Data Population and Manipulation:
+# We use the Faker library to make fake data for testing.
+# This helps us create pretend users, reservations, and menu items easily.
+
 
 faker = Faker()
 for _ in range(30):
@@ -280,6 +296,12 @@ print("Selected Bulking Meal:", bulking_menu_item)
 
 cutting_menu_item = CuttingMenu.select_menu_item(session, cutting_menu_id=1)
 print("Selected Cutting Meal:", cutting_menu_item)
+
+# 4. Transaction Management:
+# With SQLAlchemy sessions, we can start a session, make changes like adding new data, and then save those changes to the database.
+# Finally, we close the session to finish up.
+# This way, we can make sure our changes are saved properly and nothing gets messed up.
+session.commit()
 
 session.commit()
 session.close()
